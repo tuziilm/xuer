@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dxj.xuer.persistence.ArticleMapper" >
+    <resultMap id="BaseResultMap" type="com.dxj.xuer.domain.Article" >
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="title" property="title" jdbcType="VARCHAR" />
+        <result column="content" property="content" jdbcType="VARCHAR" />
+        <result column="type" property="type" jdbcType="INTEGER" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
+        <result column="gmt_create" property="gmtCreate" jdbcType="TIMESTAMP" />
+        <result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP" />
+    </resultMap>
+    <delete id="deleteById">
+        delete from article where id=#{id}
+    </delete>
+    <delete id="deleteByIds">
+        delete from article where id in
+        <foreach collection="array" item="ids"  open="(" separator="," close=")">
+            #{ids}
+        </foreach>
+    </delete>
+
+    <insert id="insert" parameterType="com.dxj.xuer.domain.Article" >
+        <selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER" >
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into article (title, content, type, remark,
+        gmt_create, gmt_modified)
+        values (#{title,jdbcType=VARCHAR}, #{content,jdbcType=VARCHAR}, #{type,jdbcType=INTEGER},  #{remark,jdbcType=VARCHAR}, now(), now())
+    </insert>
+
+    <sql id="Base_Column_List" >
+        id, title, content, type, remark, gmt_create, gmt_modified
+    </sql>
+
+    <select id="selectAll" resultMap="BaseResultMap" >
+        select
+        <include refid="Base_Column_List" />
+        from article
+    </select>
+
+    <select id="select" resultMap="BaseResultMap" parameterType="com.dxj.xuer.common.Paginator" >
+        select
+        <include refid="Base_Column_List" />
+        from article
+        <where>
+            <if test="query.name != null">
+                title like #{query.name}
+            </if>
+        </where>
+        order by id desc  limit #{start},#{sqlSize}
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+        select
+        <include refid="Base_Column_List" />
+        from article where id=#{id}
+    </select>
+
+    <update id="updateByIdSelective" parameterType="com.dxj.xuer.domain.Article" >
+        update article
+        <set >
+            <if test="title != null" >
+                title = #{title,jdbcType=VARCHAR},
+            </if>
+            <if test="content != null" >
+                content = #{content,jdbcType=VARCHAR},
+            </if>
+            <if test="type != null" >
+                `type` = #{type,jdbcType=INTEGER},
+            </if>
+            <if test="remark != null" >
+                remark = #{remark,jdbcType=VARCHAR}
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+</mapper>
